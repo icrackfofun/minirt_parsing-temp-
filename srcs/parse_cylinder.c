@@ -6,7 +6,7 @@
 /*   By: psantos- <psantos-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/27 12:04:22 by psantos-          #+#    #+#             */
-/*   Updated: 2025/10/27 12:18:20 by psantos-         ###   ########.fr       */
+/*   Updated: 2025/10/27 12:40:24 by psantos-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,10 @@ static int	parse_cylinder_body(char *line, t_cylinder *cy)
 	parse_vec(line, &i, &cy->axis);
 	if (ft_is_zerovec(&cy->axis))
 		return (write(2, "Error\ncy: invalid axis\n", 23), 1);
-	if (!is_valid_float(line + i, 0.0f, FLT_MAX))
+	if (!is_valid_float(line + i, 1e-6f, FLT_MAX - 1))
 		return (write(2, "Error\ncy: invalid diameter\n", 27), 1);
 	cy->radius = parse_float(line, &i) / 2.0f;
-	if (!is_valid_float(line + i, 0.0f, FLT_MAX))
+	if (!is_valid_float(line + i, 1e-6f, FLT_MAX))
 		return (write(2, "Error\ncy: invalid height\n", 25), 1);
 	cy->height = parse_float(line, &i);
 	if (!is_valid_rgb(line + i))

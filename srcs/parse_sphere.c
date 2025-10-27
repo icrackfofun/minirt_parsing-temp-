@@ -6,7 +6,7 @@
 /*   By: psantos- <psantos-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/27 10:35:26 by psantos-          #+#    #+#             */
-/*   Updated: 2025/10/27 12:13:34 by psantos-         ###   ########.fr       */
+/*   Updated: 2025/10/27 12:40:31 by psantos-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static int	parse_sphere_body(char *line, t_sphere *sp)
 	if (!is_valid_vec(line + i))
 		return (write(2, "Error\nsp: invalid center\n", 26), 1);
 	parse_vec(line, &i, &sp->center);
-	if (!is_valid_float(line + i, -FLT_MAX + 1, FLT_MAX - 1))
+	if (!is_valid_float(line + i, 1e-6f, FLT_MAX - 1))
 		return (write(2, "Error\nsp: invalid diameter\n", 28), 1);
 	sp->radius = parse_float(line, &i) / 2.0f;
 	if (!is_valid_rgb(line + i))
