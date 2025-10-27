@@ -1,0 +1,70 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_plane.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: psantos- <psantos-@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/27 11:24:34 by psantos-          #+#    #+#             */
+/*   Updated: 2025/10/27 12:11:18 by psantos-         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../minirt.h"
+
+static int	parse_plane_body(char *line, t_plane *pl)
+{
+	int	i;
+
+	i = 0;
+	while (ft_isspace(line[i]))
+		i++;
+	if (!is_valid_vec(line + i))
+		return (write(2, "Error\npl: invalid point\n", 25), 1);
+	parse_vec(line, &i, &pl->point);
+	if (!is_valid_vec(line + i))
+		return (write(2, "Error\npl: invalid normal\n", 26), 1);
+	parse_vec(line, &i, &pl->normal);
+	if (ft_is_zerovec(&pl->normal))
+		return (write(2, "Error\npl: invalid normal\n", 26), 1);
+	if (!is_valid_rgb(line + i))
+		return (write(2, "Error\npl: invalid color\n", 25), 1);
+	parse_color(line, &i, &pl->color);
+	if (line[i] && line[i] != '\n')
+	{
+		if (!is_valid_int(line + i, 0, 2))
+			return (write(2, "Error\npl: invalid material\n", 28), 1);
+		pl->material = (t_material)parse_int(line, &i);
+	}
+	else
+		pl->material = DEFAULT;
+	return (0);
+}
+
+int	parse_plane(char *line, t_scene *scene)
+{
+	t_plane	tmp;
+	t_plane	*pl;
+	t_list	*node;
+
+	if (count_attributes(line) < 3 || count_attributes(line) > 4)
+		return (write(2, "Error\npl: incorrect nr of attributes\n", 37), 1);
+	if (parse_plane_body(line, &tmp))
+		return (1);
+	pl = malloc(sizeof(t_plane));
+	if (!pl)
+		return (perror("malloc"), 1);
+	*pl = tmp;
+	node = malloc(sizeof(t_list));
+	if (!node)
+	{
+		free(pl);
+		return (perror("malloc"), 1);
+	}
+	node->type = PLANE;
+	node->obj = pl;
+	node->next = scene->list;
+	scene->list = node;
+	scene->n_objects++;
+	return (0);
+}
