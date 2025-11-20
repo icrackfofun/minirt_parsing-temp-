@@ -3,156 +3,143 @@
 /*                                                        :::      ::::::::   */
 /*   minirt.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: psantos- <psantos-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jlima-so <jlima-so@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/19 18:46:49 by psantos-          #+#    #+#             */
-/*   Updated: 2025/10/27 12:11:43 by psantos-         ###   ########.fr       */
+/*   Created: 2025/10/09 13:42:15 by namejojo          #+#    #+#             */
+/*   Updated: 2025/11/19 13:30:31 by jlima-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
-#include "libft/libft.h"
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <fcntl.h>
+#ifndef MINIRT_H
+# define MINIRT_H
 
-//formatting check
-typedef struct s_counts
+# include "mlx_linux/mlx.h"
+# include "mlx_linux/mlx_int.h"
+# include "my_libft/my_libft.h"
+# include "parse/parse.h"
+# include <math.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
+# include <unistd.h>
+
+# ifndef HGT
+#  define HGT 720.0
+# endif
+
+# ifndef AP_RAT
+#  define AP_RAT 1 /* (16.0 / 9) */
+# endif
+
+# ifndef FOV
+#  define FOV 120
+# endif
+
+typedef struct s_objinfo
 {
-	int	count_a;
-	int	count_c;
-	int	count_l;
-	int	count_shape;
-}	t_counts;
+	int			color;
+	int			inside;
+	int			light_count;
+	t_vec		red_vec;
+	t_point		point;
+}				t_objinfo;
 
-//helper structs
-typedef struct s_vec
+typedef struct s_simpleimg
 {
-	float	x;
-	float	y;
-	float	z;
-}	t_vec;
+	int			bpp;
+	int			endian;
+	int			line_len;
+	void		*img_ptr;
+	char		*pixel_ptr;
+}				t_simpleimg;
 
-typedef struct s_color
+typedef struct s_mlximg
 {
-	int	r;
-	int	g;
-	int	b;
-}	t_color;
+	int			total_lights;
+	int			bpp;
+	int			endian;
+	int			line_len;
+	double		ambient;
+	t_rgb		a_color;
+	void		*img_ptr;
+	char		*pixel_ptr;
+	t_point		camera;
+	t_point		ctr_pnt;
+	t_point		pixel00;
+	t_vec		ori_vec;
+	t_vec		del_h;
+	t_vec		normal_h;
+	t_vec		del_v;
+	t_vec		normal_v;
+	t_light		*ligh_rays;
+	t_vec		min_vec;
+	t_vec		vert;
+	double		min_len;
+	double		fov;
+	double		rad;
+	double		deg;
+	double		wdt;
+	t_list		*objs;
+	t_scene		*scene;
+}				t_mlximg;
 
-//scene elements
-typedef struct s_ambient
+typedef struct s_mlx
 {
-	float	ratio;
-	t_color	color;
-}	t_ambient;
+	void		*mlx_ptr;
+	void		*mlx_win;
+	t_mlximg	img;
+	t_simpleimg	img2;
+}				t_mlx;
 
-typedef struct s_camera
-{
-	t_vec	pos;
-	t_vec	dir;
-	float	fov;
-}	t_camera;
+int				my_button_hook(int key, t_mlx *mlx);
+int				my_key_hook(int key, t_mlx *mlx);
+int				close_mlx(t_mlx *mlx);
 
-typedef struct s_light
-{
-	t_vec	pos;
-	float	brightness;
-	t_color	color;
-}	t_light;
+// replicating member functions
+int				equal(t_point one, t_point two);
+t_point			add(t_point one, t_point two);
+t_point			sub(t_point one, t_point two);
+t_point			set_class(double x, double y, double z);
+int				get_rgb(t_point one, double a);
+int				get_rgb_num(double r, double g, double b, double a);
+t_vec			get_vector(t_mlximg img, double x, double y);
+double			get_cos(t_vec a, t_vec b);
+double			dot_product(t_vec a, t_vec b);
+double			get_y(t_vec o, t_vec h);
+t_vec			normalize_vec(t_vec vec);
+double			vec_len(t_vec vec);
+double			square_vec(t_vec vec);
+double			vec_len(t_vec vec);
+double			dot_product(t_vec a, t_vec b);
+double			get_y(t_vec o, t_vec h);
+double			get_x(t_vec h);
+t_vec			normalize_vec(t_vec vec);
+void			get_objs(t_mlx *mlx);
+t_list			*new_lst(void);
+t_sphere		*new_sphere(t_point center, double r, t_rgb color);
+t_ray			get_ray(t_mlximg img, double x, double y);
+t_vec			new_vec(t_point a, t_point b);
+double			div_product(t_vec a, t_vec b);
+int				find_ligh(t_mlximg img, t_ray ray);
 
-//shape structs
-typedef enum s_material
-{
-	DEFAULT,
-	GLASS,
-	MIRROR
-}	t_material;
+double			get_cy_root(t_ray ray, t_cylinder *cy, double *dv, double *xv);
+double			get_sp_root(t_sphere *sp, t_ray ray);
+double			get_pl_root(t_ray ray, t_plane *pl);
 
-typedef struct s_sphere
-{
-	t_vec		center;
-	float		radius;
-	t_color		color;
-	t_material	material;
-}	t_sphere;
+t_objinfo		set_obj_info(void);
 
-typedef struct s_plane
-{
-	t_vec		point;
-	t_vec		normal;
-	t_color		color;
-	t_material	material;
-}	t_plane;
+t_point			point_at(t_ray ray, double t);
 
-typedef struct s_cylinder
-{
-	t_vec		center;
-	t_vec		axis;
-	float		radius;
-	float		height;
-	t_color		color;
-	t_material	material;
-}	t_cylinder;
+int				get_true_rgb(t_mlximg img, t_rgb color, float root);
 
-//shapes list
-typedef enum s_obj_type
-{
-	SPHERE,
-	CYLINDER,
-	PLANE
-}	t_obj_type;
+void			render(int x, int y, t_mlximg img);
 
-typedef struct s_list
-{
-	t_obj_type		type;
-	void			*obj;
-	struct s_list	*next;
-}	t_list;
+t_rgb			get_negative_color(t_rgb color);
 
-//main scene struct
-typedef struct s_scene
-{
-	t_ambient	*ambient;
-	t_camera	*camera;
-	t_light		*light;
-	t_list		*list;
-	int			n_objects;
-}	t_scene;
+void			connect_parse(t_mlximg *img, t_scene scene);
 
-//precheck
-int		precheck(int argc, char *filename);
+t_mlximg		aux_parse(t_mlximg img);
 
-//clean
-void	clean_scene(t_scene *scene);
+void			run_code(t_mlx *mlx);
 
-//main parsing
-void	parse(char *filename, t_scene *scene);
-
-//utils
-int		ft_isspace(int c);
-int		ft_issign(int c);
-int		isshape(char *sub);
-int		ft_is_zerovec(t_vec *v);
-int		count_attributes(char *line);
-
-//attribute check
-int		is_valid_float(char *s, float min, float max);
-int		is_valid_int(char *s, int min, int max);
-int		is_valid_vec(char *s);
-int		is_valid_rgb(char *s);
-
-//attribute parsing
-float	parse_float(char *line, int *i);
-int		parse_int(char *line, int *i);
-void	parse_vec(char *line, int *i, t_vec *vec);
-void	parse_color(char *line, int *i, t_color *color);
-
-//element parsing
-int		parse_ambient(char *line, t_scene *scene);
-int		parse_camera(char *line, t_scene *scene);
-int		parse_light(char *line, t_scene *scene);
-int		parse_sphere(char *line, t_scene *scene);
-int		parse_plane(char *line, t_scene *scene);
-int		parse_cylinder(char *line, t_scene *scene);
+#endif
