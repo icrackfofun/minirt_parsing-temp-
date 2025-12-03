@@ -4,6 +4,7 @@ miniRT
 Project Overview
 ----------------
 
+WARNING: Only Compatible With LINUX!
 **miniRT** is a group project designed to implement a basic raytracer using the MiniLibX library. The program reads a scene description file (`.rt`) and generates an image of the scene, applying realistic lighting and shading based on ray-object intersections.
 
 The goal is to simulate the way light interacts with simple geometric objects: spheres, planes, and cylinders. Objects appear black if the light incident on them does not contain their color (e.g., a red sphere under pure blue light).
